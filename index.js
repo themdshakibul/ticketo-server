@@ -21,8 +21,32 @@ const client = new MongoClient(uri, {
 });
 async function run() {
   try {
+    const db = client.db("TicketoDB");
+    const organizationCallection = db.collections("organizations");
+    const eventsCallection = db.collections("events");
+    const bookingCallection = db.collections("bookings");
+    const paymentCallection = db.collections("payments");
+
     // await client.connect();
     // await client.db("admin").command({ ping: 1 });
+
+    app.post("/api/organizations", async (req, res) => {
+      const { organizationName, logo, website, description, organizerEmail } =
+        req.body;
+
+      const addData = {
+        organizationName,
+        logo,
+        website,
+        description,
+        organizerEmail,
+        createdAt: new Date(),
+        status,
+      };
+
+      const result = await organizationCallection.insertOne(addData);
+      return result;
+    });
 
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
