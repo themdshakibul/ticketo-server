@@ -22,13 +22,19 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const db = client.db("TicketoDB");
-    const organizationCallection = db.collections("organizations");
-    const eventsCallection = db.collections("events");
-    const bookingCallection = db.collections("bookings");
-    const paymentCallection = db.collections("payments");
+    const organizationCallection = db.collection("organizations");
+    const eventsCallection = db.collection("events");
+    const bookingCallection = db.collection("bookings");
+    const paymentCallection = db.collection("payments");
 
-    // await client.connect();
-    // await client.db("admin").command({ ping: 1 });
+    // organizations api
+    app.get("/api/organizations/:email", async (req, res) => {
+      const { email } = req.params;
+      const result = await organizationCallection.findOne({
+        organizerEmail: email,
+      });
+      res.json(result);
+    });
 
     app.post("/api/organizations", async (req, res) => {
       const { organizationName, logo, website, description, organizerEmail } =
@@ -41,11 +47,11 @@ async function run() {
         description,
         organizerEmail,
         createdAt: new Date(),
-        status,
+        status: "active",
       };
 
       const result = await organizationCallection.insertOne(addData);
-      return result;
+      res.json(result);
     });
 
     console.log(
