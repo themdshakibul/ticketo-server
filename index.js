@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 dotenv.config();
 
 const port = process.env.PORT;
@@ -54,9 +54,56 @@ async function run() {
       res.json(result);
     });
 
+    app.patch("/api/organizations/:id", async (req, res) => {
+      const { id } = req.params;
+      const { organizationName, logo, website, description, organizerEmail } =
+        req.body;
+
+      const updateData = {
+        organizationName,
+        logo,
+        website,
+        description,
+        organizerEmail,
+      };
+
+      const result = await organizationCallection.updateOne(
+        {
+          _id: new ObjectId(id),
+        },
+        {
+          $set: {
+            ...updateData,
+          },
+        },
+      );
+      res.json(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
     );
+
+    // events api
+    app.get("/api/events/:email", async (req, res) => {
+      const { email } = req.params;
+      const result = await eventsCallection
+        .find({
+          organizationEmail: email,
+        })
+        .toArray();
+      res.json(result);
+    });
+
+    app.post("/api/events", async (req, res) => {
+      const data = req.body;
+
+      const result = await eventsCallection.insertOne({
+        ...data,
+        // createdAt: new Date(),
+      });
+      res.json(result);
+    });
   } finally {
     // await client.close();
   }
