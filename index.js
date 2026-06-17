@@ -80,11 +80,7 @@ async function run() {
       res.json(result);
     });
 
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!",
-    );
-
-    // events api
+    // events releted api
     app.get("/api/events/:email", async (req, res) => {
       const { email } = req.params;
       const result = await eventsCallection
@@ -104,6 +100,36 @@ async function run() {
       });
       res.json(result);
     });
+
+    app.patch("/api/events/:id", async (req, res) => {
+      const { id } = req.params;
+
+      const updateData = req.body;
+
+      const result = await eventsCallection.updateOne(
+        {
+          _id: new ObjectId(id),
+        },
+        {
+          $set: {
+            ...updateData,
+          },
+        },
+      );
+      res.json(result);
+    });
+
+    app.delete("/api/events/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await eventsCallection.deleteOne({
+        _id: new ObjectId(id),
+      });
+      res.json(result);
+    });
+
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!",
+    );
   } finally {
     // await client.close();
   }
