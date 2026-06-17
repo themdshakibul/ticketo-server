@@ -24,6 +24,7 @@ async function run() {
     const db = client.db("TicketoDB");
     const organizationCallection = db.collection("organizations");
     const eventsCallection = db.collection("events");
+    const userCallection = db.collection("user");
     const bookingCallection = db.collection("bookings");
     const paymentCallection = db.collection("payments");
 
@@ -81,9 +82,26 @@ async function run() {
     });
 
     // events releted api
-
     app.get("/api/events", async (req, res) => {
-      const result = await eventsCallection.find({}).toArray();
+      const search = req.query.search;
+      const category = req.query.category;
+      const location = req.query.location;
+
+      const query = {};
+
+      if (search) {
+        query.title = { $regex: search, $options: "i" };
+      }
+
+      if (category) {
+        query.category = { $in: category.split(",") };
+      }
+
+      if (location) {
+        query.location = location;
+      }
+
+      const result = await eventsCallection.find(query).toArray();
       res.json(result);
     });
 
@@ -107,10 +125,21 @@ async function run() {
 
     app.post("/api/events", async (req, res) => {
       const data = req.body;
+      const organizer = await userCallection.findOne({
+        email: data?.organizationEmail,
+      });
+
+      const organizerEventsCount = await eventsCallection.countDocuments({
+        organizationEmail: data?.organizationEmail,
+      });
+
+      if (!organizer?.isPremium && organizerEventsCount >= 5) {
+        return res.status(401).json({ message: "Your free limit is over" });
+      }
 
       const result = await eventsCallection.insertOne({
         ...data,
-        // createdAt: new Date(),
+        status: "pending",
       });
       res.json(result);
     });
