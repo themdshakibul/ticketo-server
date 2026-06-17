@@ -81,6 +81,20 @@ async function run() {
     });
 
     // events releted api
+
+    app.get("/api/events", async (req, res) => {
+      const result = await eventsCallection.find({}).toArray();
+      res.json(result);
+    });
+
+    app.get("/api/single-events/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await eventsCallection.findOne({
+        _id: new ObjectId(id),
+      });
+      res.json(result);
+    });
+
     app.get("/api/events/:email", async (req, res) => {
       const { email } = req.params;
       const result = await eventsCallection
