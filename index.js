@@ -170,6 +170,19 @@ async function run() {
       res.json(result);
     });
 
+    app.path("app/user/upgrade/premium/:email", async (req, res) => {
+      const { email } = req.params;
+      const result = await userCallection.updateOne(
+        { email },
+        {
+          $set: {
+            isPremium: true,
+          },
+        },
+      );
+      res.json(result);
+    });
+
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!",
     );
